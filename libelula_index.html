@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Libélula · Registro de Vuelo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sky:        #5B9BD5;
+      --sky-dark:   #2E6DA4;
+      --sky-light:  #D6E8F7;
+      --sky-xlight: #EEF6FD;
+      --gold:       #E8A020;
+      --gold-light: #FEF3C7;
+      --navy:       #1A3A6B;
+      --red:        #C8272D;
+      --red-light:  #FEE2E2;
+      --green:      #16A34A;
+      --green-light:#DCFCE7;
+      --text:       #1E293B;
+      --gray:       #94A3B8;
+      --gray-mid:   #64748B;
+      --gray-light: #F8FAFC;
+      --border:     #E2E8F0;
+      --shadow:     0 2px 16px rgba(0,0,0,.07);
+      --shadow-lg:  0 20px 60px rgba(0,0,0,.15);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:#ECF2FA;color:var(--text);min-height:100vh;}
+
+    /* HEADER */
+    .hdr{background:linear-gradient(120deg,var(--navy) 0%,#2A5298 100%);height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:0 2px 16px rgba(0,0,0,.3);position:sticky;top:0;z-index:300;}
+    .hdr-l{display:flex;align-items:center;gap:12px;}
+    .hdr-logo{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);box-shadow:0 2px 10px rgba(0,0,0,.3);}
+    .hdr-t h1{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;color:var(--gold);letter-spacing:.08em;line-height:1;}
+    .hdr-t p{color:rgba(255,255,255,.55);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+    .hdr-r{display:flex;align-items:center;gap:8px;}
+    .admin-pill{display:none;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:.73rem;color:rgba(255,255,255,.85);}
+    .admin-pill.on{display:flex;}
+    .hbtn{border:1.5px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);border-radius:20px;padding:5px 15px;color:white;font-size:.75rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .16s;}
+    .hbtn:hover{background:rgba(255,255,255,.2);}
+    .hbtn-out{border-color:rgba(200,39,45,.5);background:rgba(200,39,45,.18);}
+    .hbtn-out:hover{background:rgba(200,39,45,.35);}
+
+    /* ALERT */
+    .alert-banner{display:none;padding:10px 20px;text-align:center;font-size:.82rem;font-weight:500;}
+    .alert-banner.on{display:block;}
+    .alert-warn{background:var(--gold-light);border-bottom:3px solid var(--gold);color:#78350F;}
+
+    /* LAYOUT */
+    .pg{max-width:720px;margin:0 auto;padding:28px 14px 90px;}
+    .pg-wide{max-width:1200px;margin:0 auto;padding:24px 14px 90px;}
+
+    /* CARDS */
+    .card{background:white;border-radius:14px;box-shadow:var(--shadow);padding:26px;margin-bottom:18px;}
+    .card-hd{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.05em;color:var(--navy);margin-bottom:2px;}
+    .card-sub{font-size:.77rem;color:var(--gray);margin-bottom:20px;}
+
+    /* FORM */
+    .fg{margin-bottom:14px;}
+    .fg label{display:block;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-mid);margin-bottom:5px;}
+    .req{color:var(--red);}
+    .fg input[type=text],.fg input[type=time],.fg input[type=date],.fg textarea,.fg select{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);transition:border-color .16s;background:white;}
+    .fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--sky);}
+    .fg textarea{min-height:108px;resize:vertical;line-height:1.55;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+    /* INCIDENCIA */
+    .inc-row{display:flex;gap:8px;}
+    .inc-opt{flex:1;padding:9px 6px;border:1.5px solid var(--border);border-radius:9px;background:white;font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:500;cursor:pointer;transition:all .14s;color:var(--text);}
+    .inc-opt.no{border-color:var(--green);background:var(--green-light);color:#14532D;}
+    .inc-opt.yes{border-color:var(--red);background:var(--red-light);color:var(--red);}
+    .det-wrap{display:none;margin-top:14px;}
+    .det-wrap.on{display:block;}
+
+    /* PRIVACIDAD */
+    .priv-row{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--sky-xlight);border:1.5px solid var(--sky-light);border-radius:10px;margin-bottom:14px;}
+    .priv-row input[type=checkbox]{margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;}
+    .priv-row label{font-size:.8rem;color:var(--gray-mid);line-height:1.5;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none;}
+    .priv-row a{color:var(--sky-dark);text-decoration:underline;}
+
+    /* BOTÓN ENVIAR */
+    .btn-send{width:100%;padding:13px;background:var(--navy);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.93rem;color:white;cursor:pointer;transition:all .16s;}
+    .btn-send:hover:not(:disabled){background:var(--sky-dark);transform:translateY(-1px);}
+    .btn-send:disabled{background:var(--gray);cursor:not-allowed;opacity:.6;}
+
+    /* SUCCESS */
+    .ok-wrap{display:none;text-align:center;padding:10px 0;}
+    .ok-wrap.on{display:block;}
+    .ok-icon{font-size:2.8rem;margin-bottom:8px;}
+    .ok-wrap h3{color:var(--green);font-size:1.05rem;margin-bottom:6px;}
+    .ok-wrap p{color:var(--gray-mid);font-size:.83rem;}
+    .btn-otra{background:var(--green);color:white;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.86rem;cursor:pointer;margin-top:14px;transition:background .16s;}
+    .btn-otra:hover{background:#14532D;}
+
+    /* ADMIN PANEL */
+    .adm-panel{display:none;}
+    .adm-panel.on{display:block;}
+    .adm-banner{background:linear-gradient(120deg,var(--navy) 0%,#2A5298 100%);border-radius:12px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin:22px 0 18px;}
+    .adm-banner h2{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;color:var(--gold);letter-spacing:.06em;}
+    .adm-banner p{font-size:.75rem;color:rgba(255,255,255,.6);margin-top:2px;}
+
+    /* CSV BAR */
+    .csv-bar{background:white;border-radius:12px;box-shadow:var(--shadow);padding:18px 22px;margin-bottom:16px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;}
+    .csv-bar .fg{margin-bottom:0;flex:1;min-width:140px;}
+    .btn-csv{padding:9px 18px;background:var(--green);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;color:white;cursor:pointer;white-space:nowrap;transition:all .16s;display:flex;align-items:center;gap:6px;}
+    .btn-csv:hover{background:#14532D;}
+    .btn-csv.inc-csv{background:var(--red);}
+    .btn-csv.inc-csv:hover{background:#991B1B;}
+    .btn-refresh{padding:9px 14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:8px;color:white;font-size:.76rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .16s;}
+    .btn-refresh:hover{background:rgba(255,255,255,.24);}
+
+    /* CALENDAR */
+    .week-block{margin-bottom:22px;}
+    .week-lbl{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:.05em;color:var(--navy);margin-bottom:9px;padding-left:2px;}
+    .week-lbl span{font-family:'DM Sans',sans-serif;font-size:.77rem;font-weight:400;color:var(--gray);letter-spacing:0;margin-left:6px;}
+    .day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}
+    .day-col{background:white;border-radius:11px;border:1.5px solid var(--border);overflow:hidden;min-height:100px;transition:border-color .15s;}
+    .day-col:hover{border-color:var(--sky);}
+    .day-col.hoy{border-color:var(--sky-dark);}
+    .day-hd{padding:7px 9px 5px;background:var(--gray-light);border-bottom:1px solid var(--border);}
+    .day-col.hoy .day-hd{background:var(--sky-dark);}
+    .dn{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);}
+    .dd{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.03em;color:var(--text);line-height:1;}
+    .day-col.hoy .dn{color:rgba(255,255,255,.7);}
+    .day-col.hoy .dd{color:white;}
+    .day-bd{padding:6px 7px;}
+    .day-empty{font-size:.63rem;color:#CBD5E1;font-style:italic;}
+    .mbr-row{display:flex;align-items:center;gap:3px;padding:3px 4px;border-radius:6px;cursor:pointer;transition:background .13s;margin-bottom:2px;}
+    .mbr-row:hover{background:var(--sky-light);}
+    .mbr-nm{font-size:.65rem;font-weight:500;color:var(--sky-dark);flex:1;line-height:1.3;}
+    .mbr-row:hover .mbr-nm{text-decoration:underline;}
+    .mbr-vx{font-size:.58rem;background:var(--sky-light);color:var(--sky-dark);border-radius:10px;padding:1px 5px;font-weight:600;flex-shrink:0;}
+    .inc-dot{font-size:.68rem;flex-shrink:0;}
+
+    /* MODALS */
+    .ov{position:fixed;inset:0;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .ov.on{opacity:1;pointer-events:all;}
+    .modal{background:white;border-radius:16px;padding:26px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);transform:translateY(18px);transition:transform .2s;max-height:92vh;overflow-y:auto;}
+    .ov.on .modal{transform:translateY(0);}
+    .modal-lg{max-width:620px;}
+    .modal-xl{max-width:760px;}
+    .m-hd{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;color:var(--navy);margin-bottom:2px;}
+    .m-sub{font-size:.77rem;color:var(--gray);margin-bottom:18px;}
+    .m-acts{display:flex;gap:9px;margin-top:18px;}
+    .btn-c{flex:1;padding:10px;background:var(--gray-light);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;color:var(--gray-mid);transition:background .15s;}
+    .btn-c:hover{background:var(--border);}
+    .btn-p{flex:2;padding:10px;background:var(--navy);border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;color:white;transition:all .15s;}
+    .btn-p:hover:not(:disabled){background:var(--sky-dark);}
+    .btn-p:disabled{background:var(--gray);cursor:not-allowed;opacity:.6;}
+    .btn-p-full{flex:1 1 100%;}
+    .login-err{display:none;background:var(--red-light);border:1px solid #FECACA;border-radius:8px;padding:9px 12px;font-size:.8rem;color:#991B1B;margin-top:8px;}
+    .login-err.on{display:block;}
+
+    /* VISIT CARDS */
+    .v-card{background:var(--gray-light);border-radius:9px;padding:12px;margin-bottom:9px;border-left:4px solid var(--sky);}
+    .v-card.inc{border-left-color:var(--red);}
+    .v-num{font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:7px;}
+    .v-badges{display:flex;flex-wrap:wrap;gap:5px;}
+    .badge{background:white;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:.76rem;font-weight:500;}
+    .badge-inc{border-color:#FECACA;background:var(--red-light);color:#991B1B;}
+    .badge-ok{border-color:#86EFAC;background:var(--green-light);color:#14532D;}
+    .inc-txt{background:var(--red-light);border:1px solid #FECACA;border-radius:8px;padding:9px 12px;font-size:.8rem;color:#991B1B;line-height:1.55;margin-top:7px;}
+
+    /* PRIVACIDAD MODAL */
+    .priv-body{font-size:.8rem;color:var(--gray-mid);line-height:1.7;max-height:55vh;overflow-y:auto;padding-right:4px;}
+    .priv-body h3{color:var(--navy);font-size:.85rem;margin:14px 0 4px;}
+    .priv-body p{margin-bottom:8px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--text);color:white;padding:9px 18px;border-radius:9px;font-size:.82rem;font-weight:500;z-index:4000;opacity:0;transition:all .24s;pointer-events:none;white-space:nowrap;}
+    .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+    .toast.ok{background:#14532D;}
+    .toast.err{background:var(--red);}
+
+    /* SPINNER */
+    .spin-wrap{text-align:center;padding:36px;color:var(--gray);font-size:.88rem;}
+    @keyframes sp{to{transform:rotate(360deg);}}
+    .sp{display:inline-block;animation:sp 1s linear infinite;font-size:1.3rem;}
+
+    /* CONFIG WARNING */
+    .cfg-warn{background:var(--gold-light);border:1.5px solid var(--gold);border-radius:9px;padding:14px 16px;font-size:.82rem;color:#78350F;}
+
+    /* RESPONSIVE */
+    @media(max-width:760px){.day-grid{grid-template-columns:repeat(4,1fr);}}
+    @media(max-width:480px){.day-grid{grid-template-columns:repeat(2,1fr);}.row2{grid-template-columns:1fr;}.csv-bar{flex-direction:column;}.hdr-t h1{font-size:1.3rem;}}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-l">
+    <img class="hdr-logo" src="./libelula.png" alt="Club Libélula" onerror="this.style.display='none'">
+    <div class="hdr-t">
+      <h1>Club Libélula</h1>
+      <p>Aeromodelismo · Registro de vuelo</p>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="admin-pill" id="adminPill">🔐 <span id="adminUser"></span></div>
+    <button class="hbtn" id="btnLogin" onclick="openOv('ovLogin')">🔒 Admin</button>
+    <button class="hbtn hbtn-out" id="btnLogout" style="display:none" onclick="doLogout()">Salir</button>
+  </div>
+</header>
+
+<!-- AVISO HORARIO -->
+<div class="alert-banner alert-warn" id="bannerHorario">
+  ⚠️ El campo de vuelo está fuera del horario permitido (06:00–12:00 hora Madrid). El formulario no está disponible ahora.
+</div>
+
+<!-- FORMULARIO -->
+<div class="pg" id="pgForm">
+  <div class="card">
+    <div class="card-hd">✈️ Registro de asistencia al campo</div>
+    <div class="card-sub">Rellena este formulario cada vez que vengas a volar</div>
+
+    <div id="formBody">
+      <div class="fg">
+        <label>Nombre y Apellidos <span class="req">*</span></label>
+        <input type="text" id="fNombre" placeholder="Ej: Carlos Martínez López" maxlength="80" autocomplete="name">
+      </div>
+      <div class="row2">
+        <div class="fg">
+          <label>Hora de llegada <span class="req">*</span></label>
+          <input type="time" id="fLlegada">
+        </div>
+        <div class="fg">
+          <label>Hora de salida <span class="req">*</span></label>
+          <input type="time" id="fSalida">
+        </div>
+      </div>
+      <div class="fg">
+        <label>¿Ha habido alguna incidencia? <span class="req">*</span></label>
+        <div class="inc-row">
+          <button type="button" class="inc-opt" id="btnNo" onclick="setInc(false)">✓ No</button>
+          <button type="button" class="inc-opt" id="btnSi" onclick="setInc(true)">⚠️ Sí</button>
+        </div>
+      </div>
+      <div class="det-wrap" id="detWrap">
+        <div class="fg">
+          <label>Detalle de la incidencia <span class="req">*</span></label>
+          <textarea id="fDetalle" maxlength="2000"
+            placeholder="Describe con detalle: intrusos en el campo, aeromodelo estrellado, pérdida de comunicación y caída en finca colindante, drones no autorizados, vuelo fuera de límites permitidos..."></textarea>
+        </div>
+      </div>
+
+      <!-- PRIVACIDAD -->
+      <div class="priv-row">
+        <input type="checkbox" id="chkPriv">
+        <label for="chkPriv">
+          He leído y acepto la <a href="#" onclick="openOv('ovPriv');return false">Política de Privacidad</a>.
+          Entiendo que mis datos (nombre, horarios e incidencias) serán tratados por el
+          Club Aeromodelismo Libélula con fines de seguridad y control de actividad en el campo de vuelo.
+        </label>
+      </div>
+
+      <button class="btn-send" id="btnSend" onclick="enviar()">
+        Registrar asistencia
+      </button>
+    </div>
+
+    <div class="ok-wrap" id="okWrap">
+      <div class="ok-icon">✈️</div>
+      <h3>¡Asistencia registrada!</h3>
+      <p>Tu presencia en el campo ha quedado anotada correctamente.</p>
+      <button class="btn-otra" onclick="resetForm()">Registrar otra asistencia</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div class="adm-panel" id="admPanel">
+  <div class="pg-wide">
+    <div class="adm-banner">
+      <div>
+        <h2>📋 Panel de Administración</h2>
+        <p>Consulta y exporta los registros de asistencia</p>
+      </div>
+      <button class="btn-refresh" onclick="cargarCal()">↺ Actualizar</button>
+    </div>
+
+    <!-- Descarga CSV -->
+    <div class="csv-bar">
+      <div class="fg">
+        <label>Fecha inicio</label>
+        <input type="date" id="csvDesde">
+      </div>
+      <div class="fg">
+        <label>Fecha fin</label>
+        <input type="date" id="csvHasta">
+      </div>
+      <button class="btn-csv" onclick="descargarCSV('completo')">⬇ Asistencias completas</button>
+      <button class="btn-csv inc-csv" onclick="descargarCSV('incidencias')">⚠️ Solo incidencias</button>
+    </div>
+
+    <div id="calBody">
+      <div class="spin-wrap"><span class="sp">⏳</span><br>Cargando registros…</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Login -->
+<div class="ov" id="ovLogin" onclick="outClose(event,'ovLogin')">
+  <div class="modal">
+    <div class="m-hd">🔐 Acceso Administrador</div>
+    <div class="m-sub">Solo para administradores autorizados del club</div>
+    <div class="fg">
+      <label>Email</label>
+      <input type="email" id="lEmail" placeholder="admin@clublibelula.es" autocomplete="username">
+    </div>
+    <div class="fg">
+      <label>Contraseña</label>
+      <input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="loginErr">Credenciales incorrectas. Verifica tus datos.</div>
+    <div class="m-acts">
+      <button class="btn-c" onclick="closeOv('ovLogin')">Cancelar</button>
+      <button class="btn-p" id="btnDoLogin" onclick="doLogin()">Acceder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Detalle socio -->
+<div class="ov" id="ovMember" onclick="outClose(event,'ovMember')">
+  <div class="modal modal-lg">
+    <div class="m-hd" id="mbrTitle"></div>
+    <div class="m-sub" id="mbrSub"></div>
+    <div id="mbrBody"></div>
+    <div class="m-acts">
+      <button class="btn-p btn-p-full" onclick="closeOv('ovMember')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Política de privacidad -->
+<div class="ov" id="ovPriv" onclick="outClose(event,'ovPriv')">
+  <div class="modal modal-xl">
+    <div class="m-hd">🔒 Política de Privacidad</div>
+    <div class="m-sub">Club Aeromodelismo Libélula</div>
+    <div class="priv-body">
+      <p><strong>Responsable del tratamiento:</strong> Club Aeromodelismo Libélula ·
+      CIF/NIF: <em>[PENDIENTE DE COMPLETAR]</em> ·
+      Email de contacto: <em>[EMAIL_CONTACTO_PENDIENTE]</em></p>
+
+      <h3>¿Qué datos recogemos?</h3>
+      <p>A través de este formulario recogemos nombre y apellidos, hora de llegada al campo,
+      hora de salida, y en su caso, descripción de incidencias durante la actividad de vuelo.</p>
+
+      <h3>¿Para qué usamos tus datos?</h3>
+      <p>Los datos se utilizan exclusivamente para el control de asistencia al campo de vuelo,
+      la gestión interna del club y el cumplimiento de las obligaciones de seguridad establecidas
+      por la Agencia Estatal de Seguridad Aérea (AESA) en materia de aeromodelismo.</p>
+
+      <h3>¿Quién puede acceder a tus datos?</h3>
+      <p>Solo los administradores del club (presidente y secretario) tienen acceso a los registros.
+      Los datos no se ceden a terceros salvo obligación legal o requerimiento de autoridad competente
+      (AESA, Fuerzas y Cuerpos de Seguridad del Estado).</p>
+
+      <h3>¿Cuánto tiempo conservamos tus datos?</h3>
+      <p>Los registros ordinarios se eliminan automáticamente a los 15 días. Los registros con
+      incidencia pueden conservarse por un período mayor si así lo requiere el seguimiento del
+      incidente o un requerimiento legal o administrativo.</p>
+
+      <h3>Tus derechos</h3>
+      <p>Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición y portabilidad
+      dirigiéndote al email de contacto del club. También puedes reclamar ante la Agencia Española
+      de Protección de Datos en <a href="https://www.aepd.es" target="_blank">aepd.es</a>.</p>
+
+      <h3>Base legal</h3>
+      <p>El tratamiento se realiza en base al interés legítimo del club en el control de sus
+      actividades y el cumplimiento de la normativa aeronáutica aplicable (Reglamento UE 2016/679
+      – RGPD; Ley Orgánica 3/2018 – LOPDGDD).</p>
+
+      <p style="margin-top:14px;font-size:.74rem;color:var(--gray)">
+        ⚠️ Este texto debe ser revisado por el responsable del club antes de la puesta en producción.
+        Los campos marcados como [PENDIENTE] deben completarse con los datos reales del club.
+      </p>
+    </div>
+    <div class="m-acts">
+      <button class="btn-p btn-p-full" onclick="closeOv('ovPriv')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══════════════════════════════════
+//  ⚠️  CONFIGURACIÓN
+// ══════════════════════════════════
+const SUPABASE_URL = '__SUPABASE_URL__';
+const SUPABASE_KEY = '__SUPABASE_KEY__';
+
+// ══════════════════════════════════
+//  CONSTANTES
+// ══════════════════════════════════
+const DIAS    = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MESES   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+let sb, incVal = null;
+
+// ══════════════════════════════════
+//  INIT
+// ══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (SUPABASE_URL === '__SUPABASE_URL__') {
+    document.getElementById('formBody').innerHTML =
+      '<div class="cfg-warn"><strong>⚙️ Configuración pendiente</strong><br>Edita el archivo y reemplaza <code>__SUPABASE_URL__</code> y <code>__SUPABASE_KEY__</code>.</div>';
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  initFechasCSV();
+  actualizarHorario();
+  setInterval(actualizarHorario, 30000);
+  checkSession();
+});
+
+function initFechasCSV() {
+  const hoy   = fmtDate(ahoraMadrid());
+  const hace30 = new Date(ahoraMadrid());
+  hace30.setDate(hace30.getDate() - 30);
+  document.getElementById('csvHasta').value = hoy;
+  document.getElementById('csvDesde').value = fmtDate(hace30);
+}
+
+// ══════════════════════════════════
+//  FECHA / HORA MADRID
+// ══════════════════════════════════
+function ahoraMadrid() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
+}
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function esHoy(d)       { return fmtDate(d) === fmtDate(ahoraMadrid()); }
+function dentroHorario(){ const h = ahoraMadrid().getHours(); return h >= 6 && h < 12; }
+
+function actualizarHorario() {
+  const ok = dentroHorario();
+  document.getElementById('bannerHorario').classList.toggle('on', !ok);
+  const btn = document.getElementById('btnSend');
+  if (btn) btn.disabled = !ok;
+}
+
+// ══════════════════════════════════
+//  FORMULARIO
+// ══════════════════════════════════
+function setInc(val) {
+  incVal = val;
+  document.getElementById('btnNo').className = 'inc-opt' + (!val ? ' no' : '');
+  document.getElementById('btnSi').className = 'inc-opt' + ( val ? ' yes' : '');
+  document.getElementById('detWrap').classList.toggle('on', val);
+  if (!val) document.getElementById('fDetalle').value = '';
+}
+
+async function enviar() {
+  if (!dentroHorario()) { toast('Fuera del horario permitido (06:00–12:00)', 'err'); return; }
+  const nombre  = document.getElementById('fNombre').value.trim();
+  const llegada = document.getElementById('fLlegada').value;
+  const salida  = document.getElementById('fSalida').value;
+  const detalle = document.getElementById('fDetalle').value.trim();
+  const privOk  = document.getElementById('chkPriv').checked;
+
+  if (!nombre)           { toast('Introduce tu nombre y apellidos', 'err'); return; }
+  if (!llegada)          { toast('Indica la hora de llegada', 'err'); return; }
+  if (!salida)           { toast('Indica la hora de salida', 'err'); return; }
+  if (llegada >= salida) { toast('La salida debe ser posterior a la llegada', 'err'); return; }
+  if (incVal === null)   { toast('Indica si hubo alguna incidencia', 'err'); return; }
+  if (incVal && !detalle){ toast('Describe el detalle de la incidencia', 'err'); return; }
+  if (!privOk)           { toast('Debes aceptar la política de privacidad', 'err'); return; }
+
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+
+  const { error } = await sb.from('asistencias').insert([{
+    nombre_apellidos:   nombre,
+    fecha:              fmtDate(ahoraMadrid()),
+    hora_llegada:       llegada + ':00',
+    hora_salida:        salida  + ':00',
+    incidencia:         incVal,
+    detalle_incidencia: incVal ? detalle : null,
+  }]);
+
+  if (error) {
+    console.error(error);
+    const msg = error.message?.includes('horario') ? 'Registro rechazado: fuera del horario permitido (06:00–12:00 hora Madrid).'
+              : error.message?.includes('limite')  ? 'Has superado el límite de registros por hoy. Contacta con el administrador del club.'
+              : 'Error al enviar. Inténtalo de nuevo.';
+    toast(msg, 'err');
+    btn.disabled = false; btn.textContent = 'Registrar asistencia';
+  } else {
+    document.getElementById('formBody').style.display = 'none';
+    document.getElementById('okWrap').classList.add('on');
+  }
+}
+
+function resetForm() {
+  ['fNombre','fLlegada','fSalida','fDetalle'].forEach(id => document.getElementById(id).value = '');
+  incVal = null;
+  document.getElementById('btnNo').className  = 'inc-opt';
+  document.getElementById('btnSi').className  = 'inc-opt';
+  document.getElementById('detWrap').classList.remove('on');
+  document.getElementById('chkPriv').checked  = false;
+  document.getElementById('formBody').style.display = '';
+  document.getElementById('okWrap').classList.remove('on');
+  actualizarHorario();
+}
+
+// ══════════════════════════════════
+//  AUTH
+// ══════════════════════════════════
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) activarAdmin(session.user.email);
+}
+
+async function doLogin() {
+  const email = document.getElementById('lEmail').value.trim();
+  const pass  = document.getElementById('lPass').value;
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('btnDoLogin');
+  errEl.classList.remove('on');
+  if (!email || !pass) { errEl.textContent = 'Introduce email y contraseña.'; errEl.classList.add('on'); return; }
+  btn.disabled = true; btn.textContent = 'Accediendo…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    errEl.textContent = 'Credenciales incorrectas.'; errEl.classList.add('on');
+    btn.disabled = false; btn.textContent = 'Acceder';
+  } else {
+    closeOv('ovLogin');
+    document.getElementById('lEmail').value = '';
+    document.getElementById('lPass').value  = '';
+    activarAdmin(data.user.email);
+  }
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  document.getElementById('admPanel').classList.remove('on');
+  document.getElementById('adminPill').classList.remove('on');
+  document.getElementById('btnLogin').style.display  = '';
+  document.getElementById('btnLogout').style.display = 'none';
+}
+
+function activarAdmin(email) {
+  document.getElementById('adminPill').classList.add('on');
+  document.getElementById('adminUser').textContent   = email;
+  document.getElementById('btnLogin').style.display  = 'none';
+  document.getElementById('btnLogout').style.display = '';
+  document.getElementById('admPanel').classList.add('on');
+  cargarCal();
+}
+
+// ══════════════════════════════════
+//  CALENDARIO
+// ══════════════════════════════════
+async function cargarCal() {
+  document.getElementById('calBody').innerHTML =
+    '<div class="spin-wrap"><span class="sp">⏳</span><br>Cargando…</div>';
+
+  const hoy  = ahoraMadrid();
+  const dow  = hoy.getDay() === 0 ? 7 : hoy.getDay();
+  const lunAct = new Date(hoy); lunAct.setDate(hoy.getDate() - dow + 1); lunAct.setHours(0,0,0,0);
+  const lunAnt = new Date(lunAct); lunAnt.setDate(lunAct.getDate() - 7);
+  const domAct = new Date(lunAct); domAct.setDate(lunAct.getDate() + 6);
+
+  const { data, error } = await sb.from('asistencias').select('*')
+    .gte('fecha', fmtDate(lunAnt)).lte('fecha', fmtDate(domAct)).order('hora_llegada');
+
+  if (error) { document.getElementById('calBody').innerHTML = '<p style="color:var(--red);padding:20px">Error al cargar datos.</p>'; return; }
+
+  const porFecha = {};
+  (data||[]).forEach(r => (porFecha[r.fecha] = porFecha[r.fecha] || []).push(r));
+
+  document.getElementById('calBody').innerHTML =
+    renderSemana('Semana anterior', lunAnt, porFecha) +
+    renderSemana('Semana en curso', lunAct, porFecha);
+}
+
+function renderSemana(label, lun, porFecha) {
+  const dias = Array.from({length:7}, (_,i) => { const d=new Date(lun); d.setDate(lun.getDate()+i); return d; });
+  const ini  = `${dias[0].getDate()} ${MESES[dias[0].getMonth()]}`;
+  const fin  = `${dias[6].getDate()} ${MESES[dias[6].getMonth()]} ${dias[6].getFullYear()}`;
+
+  let h = `<div class="week-block"><div class="week-lbl">${label}<span>${ini} – ${fin}</span></div><div class="day-grid">`;
+
+  dias.forEach(d => {
+    const ds   = fmtDate(d);
+    const regs = porFecha[ds] || [];
+    const porNombre = {};
+    regs.forEach(r => (porNombre[r.nombre_apellidos] = porNombre[r.nombre_apellidos] || []).push(r));
+    const nombres = Object.keys(porNombre);
+
+    h += `<div class="day-col${esHoy(d)?' hoy':''}"><div class="day-hd"><div class="dn">${DIAS[d.getDay()]}</div><div class="dd">${d.getDate()}</div></div><div class="day-bd">`;
+    if (!nombres.length) {
+      h += '<div class="day-empty">Sin registros</div>';
+    } else {
+      nombres.forEach(nm => {
+        const vs = porNombre[nm], tieneInc = vs.some(v => v.incidencia);
+        h += `<div class="mbr-row" onclick="verSocio('${esc(nm)}','${ds}')">
+          <span class="mbr-nm">${esc(nm)}</span>
+          ${vs.length>1?`<span class="mbr-vx">${vs.length}x</span>`:''}
+          ${tieneInc?'<span class="inc-dot">⚠️</span>':''}
+        </div>`;
+      });
+    }
+    h += '</div></div>';
+  });
+  return h + '</div></div>';
+}
+
+// ══════════════════════════════════
+//  DETALLE SOCIO
+// ══════════════════════════════════
+async function verSocio(nombre, fecha) {
+  const d = new Date(fecha + 'T00:00:00');
+  document.getElementById('mbrTitle').textContent = nombre;
+  document.getElementById('mbrSub').textContent =
+    `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES_L[d.getMonth()]} de ${d.getFullYear()}`;
+  document.getElementById('mbrBody').innerHTML =
+    '<div class="spin-wrap"><span class="sp">⏳</span></div>';
+  openOv('ovMember');
+
+  const { data, error } = await sb.from('asistencias').select('*')
+    .eq('nombre_apellidos', nombre).eq('fecha', fecha).order('hora_llegada');
+
+  if (error || !data?.length) {
+    document.getElementById('mbrBody').innerHTML = '<p style="color:var(--gray)">Sin registros.</p>';
+    return;
+  }
+
+  document.getElementById('mbrBody').innerHTML = data.map((r,i) => `
+    <div class="v-card${r.incidencia?' inc':''}">
+      <div class="v-num">${data.length>1?`Visita ${i+1} de ${data.length}`:'Registro único del día'}</div>
+      <div class="v-badges">
+        <span class="badge">🛫 Llegada: ${r.hora_llegada.substring(0,5)}</span>
+        <span class="badge">🛬 Salida: ${r.hora_salida.substring(0,5)}</span>
+        <span class="badge ${r.incidencia?'badge-inc':'badge-ok'}">${r.incidencia?'⚠️ Incidencia: SÍ':'✅ Sin incidencias'}</span>
+      </div>
+      ${r.incidencia&&r.detalle_incidencia?`<div class="inc-txt"><strong>Detalle:</strong> ${esc(r.detalle_incidencia)}</div>`:''}
+    </div>`).join('');
+}
+
+// ══════════════════════════════════
+//  DESCARGA CSV
+// ══════════════════════════════════
+async function descargarCSV(tipo) {
+  const desde = document.getElementById('csvDesde').value;
+  const hasta = document.getElementById('csvHasta').value;
+  if (!desde || !hasta)  { toast('Selecciona el rango de fechas', 'err'); return; }
+  if (desde > hasta)     { toast('La fecha inicio debe ser anterior al fin', 'err'); return; }
+
+  toast('Generando CSV…');
+
+  let q = sb.from('asistencias').select('*')
+    .gte('fecha', desde).lte('fecha', hasta)
+    .order('fecha').order('hora_llegada');
+  if (tipo === 'incidencias') q = q.eq('incidencia', true);
+
+  const { data, error } = await q;
+  if (error)         { toast('Error al obtener datos', 'err'); return; }
+  if (!data?.length) { toast('No hay registros en ese rango', 'err'); return; }
+
+  // BOM para que Excel respete las tildes
+  const BOM = '\uFEFF';
+  const cab = ['Fecha','Nombre y Apellidos','Hora Llegada','Hora Salida','Incidencia','Detalle Incidencia'];
+  const filas = data.map(r => [
+    r.fecha,
+    csvEsc(r.nombre_apellidos),
+    r.hora_llegada?.substring(0,5) ?? '',
+    r.hora_salida?.substring(0,5)  ?? '',
+    r.incidencia ? 'SÍ' : 'NO',
+    csvEsc(r.detalle_incidencia ?? ''),
+  ]);
+
+  const csv      = BOM + [cab, ...filas].map(row => row.join(';')).join('\r\n');
+  const filename = tipo === 'incidencias'
+    ? `libelula_incidencias_${desde}_${hasta}.csv`
+    : `libelula_asistencias_${desde}_${hasta}.csv`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:filename });
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`CSV descargado · ${data.length} registros`, 'ok');
+}
+
+function csvEsc(val) {
+  const s = String(val ?? '');
+  return (s.includes(';') || s.includes('"') || s.includes('\n'))
+    ? `"${s.replace(/"/g,'""')}"` : s;
+}
+
+// ══════════════════════════════════
+//  MODALS / UTILS
+// ══════════════════════════════════
+function openOv(id)         { document.getElementById(id).classList.add('on'); }
+function closeOv(id)        { document.getElementById(id).classList.remove('on'); }
+function outClose(e, id)    { if (e.target === document.getElementById(id)) closeOv(id); }
+
+let _toastT;
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast on ${type}`;
+  clearTimeout(_toastT);
+  _toastT = setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "club-libelula",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

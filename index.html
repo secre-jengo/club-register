@@ -208,7 +208,7 @@
 
 <!-- AVISO HORARIO -->
 <div class="alert-banner alert-warn" id="bannerHorario">
-  ⚠️ El campo de vuelo está fuera del horario permitido (06:00–12:00 hora Madrid). El formulario no está disponible ahora.
+  ⚠️ El campo de vuelo está fuera del horario permitido (06:00–23:59 hora Madrid). El formulario no está disponible ahora.
 </div>
 
 <!-- FORMULARIO -->
@@ -440,7 +440,7 @@ function fmtDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function esHoy(d)       { return fmtDate(d) === fmtDate(ahoraMadrid()); }
-function dentroHorario(){ const h = ahoraMadrid().getHours(); return h >= 6 && h < 12; }
+function dentroHorario(){ const h = ahoraMadrid().getHours(); return h >= 6 && h <= 23; }
 
 function actualizarHorario() {
   const ok = dentroHorario();
@@ -490,7 +490,7 @@ async function enviar() {
 
   if (error) {
     console.error(error);
-    const msg = error.message?.includes('horario') ? 'Registro rechazado: fuera del horario permitido (06:00–12:00 hora Madrid).'
+    const msg = error.message?.includes('horario') ? 'Registro rechazado: fuera del horario permitido (06:00–23:59 hora Madrid).'
               : error.message?.includes('limite')  ? 'Has superado el límite de registros por hoy. Contacta con el administrador del club.'
               : 'Error al enviar. Inténtalo de nuevo.';
     toast(msg, 'err');

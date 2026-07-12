@@ -9,11 +9,12 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase
+      - name: Mantener Supabase activo y limpiar datos antiguos
         run: |
-          curl -s \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/asistencias?limit=1" \
+          curl -s -X POST \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/limpiar_reservas_antiguas" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
-            || true
-          echo "✅ Ping enviado"
+            -H "Content-Type: application/json" \
+            -d '{}' || true
+          echo "✅ Mantenimiento completado"

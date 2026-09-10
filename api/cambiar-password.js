@@ -36,16 +36,20 @@ module.exports = async function handler(req, res) {
   }
  
   const sql = neon(process.env.DATABASE_URL);
-  const admins = await sql`SELECT * FROM admins WHERE email = ${user.email}`;
  
-  if (!admins.length) {
-    return res.status(404).json({ error: 'Administrador no encontrado.' });
-  }
+  // Verificar contraseña actual usando pgcrypto (compatible con hashes creados por SQL)
+  // Esto funciona independientemente de si el hash fue creado con pgcrypto o bcryptjs
+  const verificado = await sql`
+    SELECT id FROM admins
+    WHERE email = ${user.email}
+      AND password_hash = crypt(${password_actual}, password_hash)
+  `;
  
-  if (!bcrypt.compareSync(password_actual, admins[0].password_hash)) {
+  if (!verificado.length) {
     return res.status(401).json({ error: 'La contraseña actual es incorrecta.' });
   }
  
+  // Guardar nueva contraseña con bcryptjs (estándar a partir de ahora)
   const nuevo_hash = bcrypt.hashSync(password_nueva, 10);
   await sql`UPDATE admins SET password_hash = ${nuevo_hash} WHERE email = ${user.email}`;
  

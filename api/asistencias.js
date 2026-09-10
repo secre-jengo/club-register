@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
   let registros;
   if (solo_incidencias === 'true') {
     registros = await sql`
-      SELECT id, nombre_apellidos, fecha,
+      SELECT id, nombre_apellidos, fecha::text,
              hora_llegada::text, hora_salida::text,
              incidencia, detalle_incidencia, creado_en
       FROM asistencias
@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
     `;
   } else {
     registros = await sql`
-      SELECT id, nombre_apellidos, fecha,
+      SELECT id, nombre_apellidos, fecha::text,
              hora_llegada::text, hora_salida::text,
              incidencia, detalle_incidencia, creado_en
       FROM asistencias

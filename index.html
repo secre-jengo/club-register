@@ -142,6 +142,7 @@
   <div class="hdr-r">
     <div class="admin-pill" id="adminPill">🔐 <span id="adminUser"></span></div>
     <button class="hbtn" id="btnLogin" onclick="openOv('ovLogin')">🔒 Admin</button>
+    <button class="hbtn" id="btnNuevoAdmin" style="display:none" onclick="openOv('ovNuevoAdmin')" title="Nuevo administrador">👤+</button>
     <button class="hbtn" id="btnCambiarPass" style="display:none" onclick="openOv('ovCambiarPass')" title="Cambiar contraseña">🔑</button>
     <button class="hbtn hbtn-out" id="btnLogout" style="display:none" onclick="doLogout()">Salir</button>
   </div>
@@ -246,6 +247,37 @@
     <div class="m-acts"><button class="btn-p btn-p-full" onclick="closeOv('ovMember')">Cerrar</button></div>
   </div>
 </div>
+<!-- MODAL: Nuevo administrador -->
+<div class="ov" id="ovNuevoAdmin" onclick="outClose(event,'ovNuevoAdmin')">
+  <div class="modal">
+    <div class="m-hd">👤 Nuevo administrador</div>
+    <div class="m-sub">El nuevo admin podrá acceder al panel con estas credenciales</div>
+    <div class="fg">
+      <label>Email</label>
+      <input type="email" id="naEmail" placeholder="nuevo@clublibelula.es" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label>Contraseña</label>
+      <div class="pass-wrap">
+        <input type="password" id="naPass" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <button class="eye-btn" type="button" onclick="toggleEye('naPass',this)">👁️</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Repetir contraseña</label>
+      <div class="pass-wrap">
+        <input type="password" id="naRepetir" placeholder="Repite la contraseña" autocomplete="new-password"
+               onkeydown="if(event.key==='Enter')crearAdmin()">
+        <button class="eye-btn" type="button" onclick="toggleEye('naRepetir',this)">👁️</button>
+      </div>
+    </div>
+    <div class="login-err" id="naErr"></div>
+    <div class="m-acts">
+      <button class="btn-c" onclick="cerrarNuevoAdmin()">Cancelar</button>
+      <button class="btn-p" id="btnCrearAdmin" onclick="crearAdmin()">Crear administrador</button>
+    </div>
+  </div>
+</div>  
 
 <!-- MODAL: Cambiar contraseña -->
 <div class="ov" id="ovCambiarPass" onclick="outClose(event,'ovCambiarPass')">
@@ -451,6 +483,7 @@ function doLogout() {
   document.getElementById('btnLogin').style.display='';
   document.getElementById('btnLogout').style.display='none';
   document.getElementById('btnCambiarPass').style.display='none';
+  document.getElementById('btnNuevoAdmin').style.display='none';
   // Resetear el modal de login por si quedó bloqueado
   const btn = document.getElementById('btnDoLogin');
   btn.disabled=false; btn.textContent='Acceder';
@@ -504,6 +537,7 @@ function activarAdmin(email) {
   document.getElementById('btnLogin').style.display='none';
   document.getElementById('btnLogout').style.display='';
   document.getElementById('btnCambiarPass').style.display='';
+  document.getElementById('btnNuevoAdmin').style.display='';
   document.getElementById('admPanel').classList.add('on');
   cargarCal();
 }
@@ -606,6 +640,52 @@ function csvEsc(val){const s=String(val??'');return(s.includes(';')||s.includes(
 // ══════════════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════════════
+
+function cerrarNuevoAdmin() {
+  document.getElementById('naEmail').value='';
+  document.getElementById('naPass').value='';
+  document.getElementById('naRepetir').value='';
+  document.getElementById('naErr').classList.remove('on');
+  ['naPass','naRepetir'].forEach(id => {
+    document.getElementById(id).type='password';
+  });
+  closeOv('ovNuevoAdmin');
+}
+
+async function crearAdmin() {
+  const email   = document.getElementById('naEmail').value.trim();
+  const pass    = document.getElementById('naPass').value;
+  const repetir = document.getElementById('naRepetir').value;
+  const errEl   = document.getElementById('naErr');
+  const btn     = document.getElementById('btnCrearAdmin');
+  errEl.classList.remove('on');
+
+  if (!email)           { errEl.textContent='El email es obligatorio.'; errEl.classList.add('on'); return; }
+  if (!pass)            { errEl.textContent='La contraseña es obligatoria.'; errEl.classList.add('on'); return; }
+  if (pass.length < 8)  { errEl.textContent='La contraseña debe tener al menos 8 caracteres.'; errEl.classList.add('on'); return; }
+  if (pass !== repetir) { errEl.textContent='Las contraseñas no coinciden.'; errEl.classList.add('on'); return; }
+
+  btn.disabled=true; btn.textContent='Creando…';
+
+  try {
+    const res = await fetch('/api/crear-admin', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${getToken()}` },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Error al crear el administrador.';
+      errEl.classList.add('on');
+    } else {
+      cerrarNuevoAdmin();
+      toast(`✅ Administrador ${email} creado correctamente`, 'ok');
+    }
+  } catch(e) {
+    errEl.textContent='Error de conexión.'; errEl.classList.add('on');
+  }
+  btn.disabled=false; btn.textContent='Crear administrador';
+}  
 function toggleEye(inputId, btn) {
   const input = document.getElementById(inputId);
   const show  = input.type === 'password';

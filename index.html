@@ -391,12 +391,32 @@ document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 });
 
+let filtroActivo = 'todas';
+
 function initFechasCSV() {
   const hoy    = fmtDate(ahoraMadrid());
   const hace30 = new Date(ahoraMadrid());
   hace30.setDate(hace30.getDate() - 30);
   document.getElementById('csvHasta').value = hoy;
   document.getElementById('csvDesde').value = fmtDate(hace30);
+  // Inicializar fechas del calendario
+  const hoy2    = ahoraMadrid();
+  const dow     = hoy2.getDay()===0?7:hoy2.getDay();
+  const lunAnt  = new Date(hoy2);
+  lunAnt.setDate(hoy2.getDate()-dow+1-7);
+  const domAct  = new Date(hoy2);
+  domAct.setDate(hoy2.getDate()-dow+7);
+  document.getElementById('calDesde').value = fmtDate(lunAnt);
+  document.getElementById('calHasta').value = fmtDate(domAct);
+}
+
+function setFiltro(f) {
+  filtroActivo = f;
+  ['todas','sin','con'].forEach(x => {
+    document.getElementById('filt'+x.charAt(0).toUpperCase()+x.slice(1))
+      .classList.toggle('active', x===f);
+  });
+  cargarCal();
 }
 
 // ══════════════════════════════════════════════
@@ -607,23 +627,36 @@ function activarAdmin(email) {
 // ══════════════════════════════════════════════
 async function cargarCal() {
   document.getElementById('calBody').innerHTML='<div class="spin-wrap"><span class="sp">⏳</span><br>Cargando…</div>';
-  const hoy  = ahoraMadrid();
-  const dow  = hoy.getDay()===0?7:hoy.getDay();
-  const lunAct=new Date(hoy); lunAct.setDate(hoy.getDate()-dow+1); lunAct.setHours(0,0,0,0);
-  const lunAnt=new Date(lunAct); lunAnt.setDate(lunAct.getDate()-7);
-  const domAct=new Date(lunAct); domAct.setDate(lunAct.getDate()+6);
+  const desde = document.getElementById('calDesde').value;
+  const hasta = document.getElementById('calHasta').value;
+  if (!desde||!hasta) { document.getElementById('calBody').innerHTML='<p style="color:var(--gray);padding:20px">Selecciona un rango de fechas.</p>'; return; }
 
   try {
-    const res = await fetch(`/api/asistencias?desde=${fmtDate(lunAnt)}&hasta=${fmtDate(domAct)}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
+    let url = `/api/asistencias?desde=${desde}&hasta=${hasta}`;
+    if (filtroActivo==='con') url += '&solo_incidencias=true';
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${getToken()}` } });
     if (res.status===401) { doLogout(); return; }
-    registrosCache = await res.json();
+    let datos = await res.json();
+    if (filtroActivo==='sin') datos = datos.filter(r => !r.incidencia);
+    registrosCache = datos;
     const porFecha={};
     registrosCache.forEach(r=>(porFecha[r.fecha]=porFecha[r.fecha]||[]).push(r));
-    document.getElementById('calBody').innerHTML=
-      renderSemana('Semana anterior',lunAnt,porFecha)+
-      renderSemana('Semana en curso',lunAct,porFecha);
+    // Generar días del rango
+    const d0=new Date(desde+'T00:00:00'), d1=new Date(hasta+'T00:00:00');
+    const dias=[];
+    for(let d=new Date(d0);d<=d1;d.setDate(d.getDate()+1)) dias.push(new Date(d));
+    // Agrupar en semanas
+    let html='', semDias=[], semLabel='';
+    dias.forEach((d,i)=>{
+      if(semDias.length===0) semLabel=`${d.getDate()} ${MESES[d.getMonth()]}`;
+      semDias.push(d);
+      if(d.getDay()===0||i===dias.length-1){
+        const fin=`${semDias[semDias.length-1].getDate()} ${MESES[semDias[semDias.length-1].getMonth()]} ${semDias[semDias.length-1].getFullYear()}`;
+        html+=renderSemanaCustom(semLabel+' – '+fin, semDias, porFecha);
+        semDias=[];
+      }
+    });
+    document.getElementById('calBody').innerHTML = html || '<p style="color:var(--gray);padding:20px">No hay registros en este periodo.</p>';
   } catch(e) {
     document.getElementById('calBody').innerHTML='<p style="color:var(--red);padding:20px">Error al cargar datos.</p>';
   }
@@ -650,7 +683,22 @@ function renderSemana(label,lun,porFecha) {
 // ══════════════════════════════════════════════
 //  DETALLE SOCIO (client-side desde cache)
 // ══════════════════════════════════════════════
-function verSocio(nombre, fecha) {
+
+  function renderSemanaCustom(label, dias, porFecha) {
+  let h=`<div class="week-block"><div class="week-lbl">${label}</div><div class="day-grid">`;
+  dias.forEach(d=>{
+    const ds=fmtDate(d),regs=porFecha[ds]||[];
+    const porNombre={};
+    regs.forEach(r=>(porNombre[r.nombre_apellidos]=porNombre[r.nombre_apellidos]||[]).push(r));
+    const nombres=Object.keys(porNombre);
+    h+=`<div class="day-col${esHoy(d)?' hoy':''}"><div class="day-hd"><div class="dn">${DIAS[d.getDay()]}</div><div class="dd">${d.getDate()}</div></div><div class="day-bd">`;
+    if(!nombres.length){h+='<div class="day-empty">Sin registros</div>';}
+    else{nombres.forEach(nm=>{const vs=porNombre[nm],tieneInc=vs.some(v=>v.incidencia);h+=`<div class="mbr-row" onclick="verSocio('${esc(nm)}','${ds}')"><span class="mbr-nm">${esc(nm)}</span>${vs.length>1?`<span class="mbr-vx">${vs.length}x</span>`:''}${tieneInc?'<span class="inc-dot">⚠️</span>':''}</div>`;});}
+    h+='</div></div>';
+  });
+  return h+'</div></div>';
+}
+  function verSocio(nombre, fecha) {
   const d=new Date(fecha+'T00:00:00');
   document.getElementById('mbrTitle').textContent=nombre;
   document.getElementById('mbrSub').textContent=`${DIAS[d.getDay()]} ${d.getDate()} de ${MESES_L[d.getMonth()]} de ${d.getFullYear()}`;

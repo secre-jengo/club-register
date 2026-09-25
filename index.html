@@ -236,6 +236,7 @@
 
 <div class="adm-panel" id="admPanel">
   <div class="pg-wide">
+
     <div class="adm-banner">
       <div>
         <h2>📋 Panel de Administración</h2>
@@ -243,13 +244,42 @@
       </div>
       <button class="btn-refresh" onclick="cargarCal()">↺ Actualizar</button>
     </div>
-    <div class="csv-bar">
-      <div class="fg"><label>Fecha inicio</label><input type="date" id="csvDesde"></div>
-      <div class="fg"><label>Fecha fin</label><input type="date" id="csvHasta"></div>
-      <button class="btn-csv" onclick="descargarCSV(false)">⬇ Asistencias completas</button>
-      <button class="btn-csv inc-csv" onclick="descargarCSV(true)">⚠️ Solo incidencias</button>
+
+    <!-- SECCIÓN 1: CONSULTA -->
+    <div class="adm-section">
+      <div class="adm-section-hd">
+        <h3>📅 Consulta de registros</h3>
+        <p>Semana en curso y semana anterior · Filtra por fecha e incidencias</p>
+      </div>
+      <div class="cal-filters">
+        <div class="cal-filter-dates">
+          <div class="fg"><label>Fecha inicio</label><input type="date" id="calDesde"></div>
+          <div class="fg"><label>Fecha fin</label><input type="date" id="calHasta"></div>
+          <button class="btn-buscar" onclick="cargarCal()">Buscar</button>
+        </div>
+        <div class="inc-filter">
+          <button class="inc-fil-btn todas active" id="filtTodas" onclick="setFiltro('todas')">📋 Todas</button>
+          <button class="inc-fil-btn sin" id="filtSin" onclick="setFiltro('sin')">✅ Sin incidencias</button>
+          <button class="inc-fil-btn con" id="filtCon" onclick="setFiltro('con')">⚠️ Con incidencias</button>
+        </div>
+      </div>
+      <div id="calBody"><div class="spin-wrap"><span class="sp">⏳</span><br>Cargando registros…</div></div>
     </div>
-    <div id="calBody"><div class="spin-wrap"><span class="sp">⏳</span><br>Cargando registros…</div></div>
+
+    <!-- SECCIÓN 2: EXPORTAR -->
+    <div class="adm-section">
+      <div class="adm-section-hd">
+        <h3>⬇ Exportar historial</h3>
+        <p>Descarga registros en formato CSV para cualquier rango de fechas</p>
+      </div>
+      <div class="csv-bar" style="box-shadow:none;padding:0;background:transparent;">
+        <div class="fg"><label>Fecha inicio</label><input type="date" id="csvDesde"></div>
+        <div class="fg"><label>Fecha fin</label><input type="date" id="csvHasta"></div>
+        <button class="btn-csv" onclick="descargarCSV(false)">⬇ Asistencias completas</button>
+        <button class="btn-csv inc-csv" onclick="descargarCSV(true)">⚠️ Solo incidencias</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
